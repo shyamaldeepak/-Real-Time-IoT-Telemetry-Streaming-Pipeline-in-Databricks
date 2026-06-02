@@ -1,0 +1,8 @@
+# Ignore local simulated data and caches
+data/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db

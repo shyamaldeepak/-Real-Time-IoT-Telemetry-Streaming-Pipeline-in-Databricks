@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Medallion Pipeline Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="icon-pulse">⚡</span>
+        <h1>Real-Time IoT Medallion Pipeline</h1>
+        <span class="badge live-badge">LIVE SIMULATOR</span>
+      </div>
+      <div class="controls-area">
+        <button id="btn-play-pause" class="btn btn-primary">
+          <span class="btn-icon">▶</span> <span class="btn-text">Start Ingestion</span>
+        </button>
+        <button id="btn-inject-anomaly" class="btn btn-warn">
+          🔥 Inject Anomaly
+        </button>
+        <button id="btn-inject-corrupt" class="btn btn-danger">
+          💀 Inject Corrupt
+        </button>
+        <button id="btn-reset" class="btn btn-secondary">
+          🔄 Reset Pipeline
+        </button>
+        <div class="speed-control">
+          <label for="select-speed">Speed:</label>
+          <select id="select-speed">
+            <option value="1000">Fast (1s)</option>
+            <option value="3000" selected>Normal (3s)</option>
+            <option value="5000">Slow (5s)</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="app-main">
+      
+      <!-- Left Column: The Medallion Pipeline Flow -->
+      <section class="pipeline-section">
+        <h2>🛠️ Medallion Pipeline Flow</h2>
+        
+        <div class="pipeline-flow">
+          
+          <!-- Landing Zone (Raw Files) -->
+          <div class="pipeline-node landing-zone-node" id="node-landing">
+            <div class="node-header">
+              <h3>📂 1. Landing Zone (S3 / DBFS)</h3>
+              <span class="node-count" id="count-landing">0 Files</span>
+            </div>
+            <p class="node-desc">Raw JSON telemetry data arriving from IoT devices.</p>
+            <div class="file-list-container">
+              <div class="file-list" id="list-landing-files">
+                <div class="empty-placeholder">Waiting to start ingestion...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="connector-arrow">🔽 Ingesting via Auto Loader (`cloudFiles`)</div>
+
+          <!-- Bronze Layer -->
+          <div class="pipeline-node bronze-node" id="node-bronze">
+            <div class="node-header">
+              <h3>🥉 2. Bronze Table (Raw Delta)</h3>
+              <span class="node-count" id="count-bronze">0 rows</span>
+            </div>
+            <p class="node-desc">Exactly-once copy of all raw records + audit metadata.</p>
+            <div class="table-container">
+              <table id="tbl-bronze">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Time</th>
+                    <th>Temp</th>
+                    <th>Hum</th>
+                    <th>Status</th>
+                    <th>File Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="placeholder-row"><td colspan="6">No raw data ingested yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="connector-arrow">🔽 Filtering nulls & Parsing Datatypes</div>
+
+          <!-- Silver Layer -->
+          <div class="pipeline-node silver-node" id="node-silver">
+            <div class="node-header">
+              <h3>🥈 3. Silver Table (Clean Delta)</h3>
+              <span class="node-count" id="count-silver">0 rows</span>
+            </div>
+            <p class="node-desc">Validated, typed, and clean single source of truth.</p>
+            <div class="table-container">
+              <table id="tbl-silver">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Timestamp</th>
+                    <th>Temp (°C)</th>
+                    <th>Hum (%)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="placeholder-row"><td colspan="5">No clean data processed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="connector-arrow">🔽 5-Min Sliding Window & Watermarking</div>
+
+          <!-- Gold Layer -->
+          <div class="pipeline-node gold-node" id="node-gold">
+            <div class="node-header">
+              <h3>🥇 4. Gold Table (Alerts & Aggs)</h3>
+              <span class="node-count" id="count-gold">0 rows</span>
+            </div>
+            <p class="node-desc">Pre-aggregated metrics & temperature alarms for BI.</p>
+            <div class="table-container">
+              <table id="tbl-gold">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Window Start</th>
+                    <th>Window End</th>
+                    <th>Avg Temp</th>
+                    <th>Max Temp</th>
+                    <th>Alert Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="placeholder-row"><td colspan="6">No windowed aggregates calculated yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Right Column: Real-Time BI Dashboard -->
+      <section class="dashboard-section">
+        <h2>📊 Real-Time BI & Alert Dashboard</h2>
+        
+        <!-- Metrics Row -->
+        <div class="metrics-grid">
+          <div class="metric-card card-raw">
+            <h4>Total Records Ingested</h4>
+            <p class="metric-value" id="metric-total-raw">0</p>
+            <span class="metric-label">Bronze Raw Rows</span>
+          </div>
+          <div class="metric-card card-cleaned">
+            <h4>Clean Records</h4>
+            <p class="metric-value text-success" id="metric-total-clean">0</p>
+            <span class="metric-label">Silver Cleaned Rows</span>
+          </div>
+          <div class="metric-card card-filtered">
+            <h4>Errors Filtered</h4>
+            <p class="metric-value text-danger" id="metric-total-filtered">0</p>
+            <span class="metric-label">Null Humidity Dropped</span>
+          </div>
+          <div class="metric-card card-alerts">
+            <h4>Critical Overheat Alerts</h4>
+            <p class="metric-value text-alert pulse-text" id="metric-total-alerts">0</p>
+            <span class="metric-label">Temp > 80°C Detected</span>
+          </div>
+        </div>
+
+        <!-- Real-Time Chart Widget -->
+        <div class="chart-container-wrapper glass-panel">
+          <h3>📈 Real-Time Temperature Monitoring (°C)</h3>
+          <p class="chart-subtitle">Live sliding average temperature of devices in active windows</p>
+          <div class="chart-canvas-area">
+            <canvas id="chart-realtime" height="280"></canvas>
+          </div>
+        </div>
+
+        <!-- Device Grid -->
+        <div class="device-status-wrapper glass-panel">
+          <h3>🖥️ Active Device Fleet Status</h3>
+          <div class="device-grid" id="device-status-grid">
+            <!-- Dynamically populated -->
+            <div class="device-card" id="card-sensor-north-01">
+              <div class="device-card-header">
+                <h5>sensor-north-01</h5>
+                <span class="status-indicator stat-ok">● OK</span>
+              </div>
+              <div class="device-stat">Temp: <span class="val-temp">--</span>°C</div>
+              <div class="device-stat">Humidity: <span class="val-hum">--</span>%</div>
+            </div>
+            <div class="device-card" id="card-sensor-east-02">
+              <div class="device-card-header">
+                <h5>sensor-east-02</h5>
+                <span class="status-indicator stat-ok">● OK</span>
+              </div>
+              <div class="device-stat">Temp: <span class="val-temp">--</span>°C</div>
+              <div class="device-stat">Humidity: <span class="val-hum">--</span>%</div>
+            </div>
+            <div class="device-card" id="card-sensor-south-03">
+              <div class="device-card-header">
+                <h5>sensor-south-03</h5>
+                <span class="status-indicator stat-ok">● OK</span>
+              </div>
+              <div class="device-stat">Temp: <span class="val-temp">--</span>°C</div>
+              <div class="device-stat">Humidity: <span class="val-hum">--</span>%</div>
+            </div>
+            <div class="device-card" id="card-sensor-west-04">
+              <div class="device-card-header">
+                <h5>sensor-west-04</h5>
+                <span class="status-indicator stat-ok">● OK</span>
+              </div>
+              <div class="device-stat">Temp: <span class="val-temp">--</span>°C</div>
+              <div class="device-stat">Humidity: <span class="val-hum">--</span>%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How to Explanations Console -->
+        <div class="explanation-console glass-panel">
+          <h3>🗣️ Presentation Cheat Sheet (Live Context)</h3>
+          <div class="console-box" id="console-explanation">
+            Click <strong>"Start Ingestion"</strong> above. As data flows through the pipeline, this panel will give you direct talking points to explain the exact mechanics of what is happening to your Project Manager or Client!
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
