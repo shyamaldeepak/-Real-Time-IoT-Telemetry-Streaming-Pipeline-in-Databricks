@@ -1,3 +1,6 @@
+
+
+<img width="1171" height="870" alt="image (1)" src="https://github.com/user-attachments/assets/83654ccf-2a81-49d7-b6f4-15245f71034a" />
 # 🚀 Real-Time IoT Telemetry Streaming Pipeline in Databricks
 
 Welcome to the **Real-Time IoT Telemetry Streaming Pipeline**! This project is designed as a complete, production-ready blueprint that is simple enough for a beginner to master, yet robust enough to show off to clients, team leads, or project managers. 
