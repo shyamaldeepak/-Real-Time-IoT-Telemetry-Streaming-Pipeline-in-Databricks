@@ -18,8 +18,7 @@ This document serves as your complete guide. It includes the **Implementation Pl
 6. [🗣️ How to Present this Project to a Client/PM](#%EF%B8%8F-how-to-present-this-project-to-a-clientpm)
 7. [🖥️ Interactive Medallion Web Visualizer (Offline Demo)](#%EF%B8%8F-interactive-medallion-web-visualizer-offline-demo)
 
----
-
+-—
 ## 🎯 Project Purpose & Business Use Cases
 
 ### What does this project do?
